@@ -1,0 +1,40 @@
+const { chromium } = require(process.env.PLAYWRIGHT_PACKAGE || 'playwright');
+const assert = require('node:assert/strict');
+const fs = require('node:fs/promises');
+const path = require('node:path');
+(async () => {
+ const browser = await chromium.launch({executablePath:process.env.BROWSER_PATH,headless:true});
+ try {
+  const page = await browser.newPage({viewport:{width:1440,height:1080},deviceScaleFactor:1});
+  page.setDefaultTimeout(120000);page.setDefaultNavigationTimeout(120000);
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  const base=process.env.PREVIEW_URL || 'http://127.0.0.1:5173';
+  const output=path.resolve('ui-preview');await fs.mkdir(output,{recursive:true});
+  await page.goto(base+'/preview');await page.getByRole('heading',{name:'Make today count, Alex.'}).waitFor();
+  await page.screenshot({path:path.join(output,'student-desktop.png'),fullPage:true});
+  await page.getByRole('link',{name:'My planner NEW'}).click();
+  await page.getByRole('heading',{name:'A semester on your terms.'}).waitFor();
+  for(const day of ['Tue','Wed','Thu','Fri'])await page.getByRole('button',{name:day,exact:true}).click();
+  await page.getByText('Limited availability: one day may not be enough.',{exact:false}).waitFor();
+  await page.getByRole('button',{name:'Save preferences & draft'}).click();
+  await page.getByText('Preview preferences updated.',{exact:false}).waitFor();
+  await page.screenshot({path:path.join(output,'planner-desktop.png'),fullPage:true});
+  await page.goto(base+'/preview/admin');await page.getByRole('heading',{name:'Your students'}).waitFor();
+  await page.getByRole('textbox',{name:'Search students'}).fill('Jamie');
+  assert.equal(await page.locator('tbody tr').count(),1);assert.match(await page.locator('tbody').innerText(),/Jamie Chen/);
+  await page.getByRole('textbox',{name:'Search students'}).fill('');
+  await page.screenshot({path:path.join(output,'faculty-desktop.png'),fullPage:true});
+  await page.goto(base+'/preview/admin/analytics');await page.getByRole('heading',{name:'Progress, in perspective.'}).waitFor();
+  await page.goto(base+'/preview/admin/at-risk');await page.getByRole('button',{name:'Resolve',exact:true}).first().click();await page.getByText('Resolved',{exact:true}).first().waitFor();
+  await page.goto(base+'/preview/admin/settings');await page.getByRole('heading',{name:'Good data. Better decisions.'}).waitFor();
+  await page.goto(base+'/login');await page.getByRole('heading',{name:'Welcome back.'}).waitFor();await page.screenshot({path:path.join(output,'login-desktop.png'),fullPage:true});
+  await page.setViewportSize({width:390,height:844});await page.goto(base+'/preview');await page.getByRole('heading',{name:'Make today count, Alex.'}).waitFor();
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,'Mobile page must not overflow horizontally');
+  await page.screenshot({path:path.join(output,'student-mobile.png'),fullPage:true});
+  await page.getByRole('button',{name:'Toggle navigation'}).click();await page.getByRole('link',{name:'My planner NEW'}).click();
+  await page.getByRole('heading',{name:'A semester on your terms.'}).waitFor();
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,'Mobile planner must not overflow horizontally');
+  await page.screenshot({path:path.join(output,'planner-mobile.png'),fullPage:true});
+  assert.deepEqual(errors,[]);console.log('PASS: desktop/mobile rendering, navigation, planner warning/save, faculty search, alert update, analytics, imports and login. No page errors. Screenshots: '+output);
+ } finally { await browser.close(); }
+})().catch(error=>{console.error(error);process.exitCode=1;});

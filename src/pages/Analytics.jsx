@@ -1,73 +1,10 @@
-import { useEffect, useState } from "react";
-import API from "../api/api";
-import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
-
-const COLORS = ["#22c55e", "#ef4444"];
-
-const Analytics = () => {
-  const [overview, setOverview] = useState({});
-  const [attendanceData, setAttendanceData] = useState([]);
-  const [performanceData, setPerformanceData] = useState([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const overviewRes = await API.get("/api/analytics/overview");
-      const attendanceRes = await API.get("/api/analytics/attendance-distribution");
-      const performanceRes = await API.get("/api/analytics/performance-distribution");
-
-      setOverview(overviewRes.data);
-      setAttendanceData(attendanceRes.data);
-      setPerformanceData(performanceRes.data);
-    };
-
-    fetchData();
-  }, []);
-
-  return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-semibold">Admin Analytics</h1>
-
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded shadow">
-          Total Students: {overview.totalStudents}
-        </div>
-        <div className="bg-white p-4 rounded shadow text-red-600">
-          Low Attendance: {overview.lowAttendance}
-        </div>
-        <div className="bg-white p-4 rounded shadow text-yellow-600">
-          Low Performance: {overview.lowPerformance}
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-8">
-        <div className="bg-white p-4 rounded shadow">
-          <h2 className="font-medium mb-2">Attendance Distribution</h2>
-          <PieChart width={300} height={300}>
-            <Pie data={attendanceData} dataKey="value" nameKey="name" outerRadius={100}>
-              {attendanceData.map((entry, index) => (
-                <Cell key={index} fill={COLORS[index]} />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </div>
-
-        <div className="bg-white p-4 rounded shadow">
-          <h2 className="font-medium mb-2">Performance Distribution</h2>
-          <PieChart width={300} height={300}>
-            <Pie data={performanceData} dataKey="value" nameKey="name" outerRadius={100}>
-              {performanceData.map((entry, index) => (
-                <Cell key={index} fill={COLORS[index]} />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default Analytics;
+import {useEffect,useState} from 'react';
+import API from '../api/api';
+import {PieChart,Pie,Cell,Tooltip,ResponsiveContainer} from 'recharts';
+import {PageHeader,StatCard,Notice,LoadingState,EmptyState} from '../components/UI';
+const colors=['#2563eb','#f59e0b'];
+export default function Analytics({demo=false}){
+ const [data,setData]=useState(demo?{overview:{totalStudents:5,lowAttendance:1,lowPerformance:1},attendance:[{name:'60% or above',value:4},{name:'Below 60%',value:1}],performance:[{name:'40% or above',value:4},{name:'Below 40%',value:1}]}:null),[error,setError]=useState('');
+ useEffect(()=>{if(demo)return;let active=true;Promise.all(['/api/analytics/overview','/api/analytics/attendance-distribution','/api/analytics/performance-distribution'].map(p=>API.get(p))).then(([o,a,p])=>{if(active)setData({overview:o.data,attendance:a.data,performance:p.data});}).catch(()=>{if(active)setError('Could not load analytics. Check your connection and reload.');});return()=>{active=false;};},[demo]);
+ return <><PageHeader eyebrow="ACADEMIC INSIGHTS" title="Academic analytics" description="A clear view of attendance and performance across your students."/>{error?<Notice error>{error}</Notice>:!data?<LoadingState/>:<><div className="stats-grid three-stats"><StatCard label="Total students" value={data.overview.totalStudents} detail="In your workspace" icon="users" tone="stat-featured"/><StatCard label="Low attendance" value={data.overview.lowAttendance} detail="Current alert threshold: below 60%" icon="calendar"/><StatCard label="Low performance" value={data.overview.lowPerformance} detail="Average assessment below 40%" icon="book"/></div><div className="bottom-grid">{[['Attendance distribution',data.attendance],['Assessment distribution',data.performance]].map(([title,items])=><section className="panel" key={title}><div className="section-heading"><h2>{title}</h2><span className="tag">ALL STUDENTS</span></div>{items.some(d=>d.value>0)?<><div className="chart-container"><ResponsiveContainer width="100%" height={280}><PieChart><Pie data={items} dataKey="value" nameKey="name" innerRadius={75} outerRadius={105} paddingAngle={3} stroke="none">{items.map((d,i)=><Cell key={d.name} fill={colors[i%colors.length]}/>)}</Pie><Tooltip/></PieChart></ResponsiveContainer></div><div className="chart-legend">{items.map((d,i)=><span key={d.name}><i style={{background:colors[i%colors.length]}}/>{d.name}<b>{d.value}</b></span>)}</div></>:<EmptyState title="No data yet">Import student records to see this distribution.</EmptyState>}</section>)}</div></>}</>;
+}

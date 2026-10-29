@@ -1,0 +1,25 @@
+const paths = {
+ grid: 'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
+ calendar: 'M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2 M7 14h2 M12 14h2 M7 18h2',
+ chart: 'M4 3v17h17 M8 15v-4 M13 15V7 M18 15V4',
+ book: 'M12 6c-3-3-7-3-10-2v15c3-1 7-1 10 2 3-3 7-3 10-2V4c-3-1-7-1-10 2z M12 6v15',
+ arrow: 'M5 12h14 M13 6l6 6-6 6',
+ chevron: 'm9 5 7 7-7 7',
+ check: 'm5 12 4 4L19 6',
+ clock: 'M12 8v5l3 2 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',
+ upload: 'M12 16V3 m-5 5 5-5 5 5 M3 15v6h18v-6',
+ bell: 'M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9 M10 21h4',
+ logout: 'M9 4H3v16h6 M9 12h12 m-5-5 5 5-5 5',
+ settings: 'M4 7h16 M4 17h16 M8 4v6 M16 14v6',
+ search: 'M21 21l-5-5 M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0',
+ users: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0 M17 3a4 4 0 0 1 0 8 M22 21v-2a4 4 0 0 0-3-4',
+ spark: 'm12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z',
+ shield: 'm12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6z m-5 10 3 3 7-7',
+ warning: 'm12 3 10 18H2z M12 9v5 M12 17v1',
+ plus: 'M12 5v14 M5 12h14',
+ close: 'm6 6 12 12 M6 18 18 6',
+ menu: 'M3 6h18 M3 12h18 M3 18h18',
+ campus: 'M2 9l10-6 10 6H2z M4 10v9 M9 10v9 M15 10v9 M20 10v9 M2 21h20 M1 19h22',
+ mail: 'M2 5h20v14H2z m0 0 10 8L22 5'
+};
+export default function Icon({ name, size = 20, ...props }) { return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}><path d={paths[name] || paths.grid}/></svg>; }

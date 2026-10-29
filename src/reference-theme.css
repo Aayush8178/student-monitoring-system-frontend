@@ -1,0 +1,191 @@
+/* Reference-inspired presentation. Application behavior stays in existing components. */
+:root {
+  --ink: #202124;
+  --muted: #737b88;
+  --line: #e3e3e7;
+  --bg: #fafbfc;
+  color: var(--ink);
+  background: var(--bg);
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+body { background: var(--bg); }
+.centered-login-page {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px 24px;
+  position: relative;
+  isolation: isolate;
+  background: #eef0f3;
+}
+.centered-login-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(#f3f5f88c, #edf1f5ad), url('https://images.pexels.com/photos/3747513/pexels-photo-3747513.jpeg?auto=compress&cs=tinysrgb&w=2560') center / cover no-repeat;
+  pointer-events: none;
+}
+.centered-login-card {
+  width: 100%;
+  max-width: 450px;
+  margin: auto 0;
+  padding: 32px 38px;
+  background: #ffffffed;
+  border: 1px solid #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 18px 65px #26364d1c;
+  text-align: center;
+}
+.login-ipu-logo { display: block; width: 86px; height: 86px; object-fit: contain; margin: 0 auto 18px; }
+.centered-login-card > .eyebrow { font-size: 9px; color: #727b89; letter-spacing: 1.5px; }
+.centered-login-card h1 { font-size: 30px; color: #222b39; font-weight: 600; letter-spacing: -.8px; margin: 10px 0; }
+.centered-login-description { color: #7b8390; font-size: 12px; line-height: 1.7; }
+.centered-login-card form { text-align: left; margin-top: 28px; }
+.centered-login-card .field { color: #414b5c; font-size: 12px; margin-bottom: 18px; }
+.centered-login-card .field input { min-width: 0; width: 100%; background: #fff; border-color: #dce1e8; padding: 13px 14px; font-size: 16px; border-radius: 9px; }
+.centered-login-card .field input:focus { border-color: #2563eb; }
+.centered-login-card .login-submit { width: 100%; min-height: 48px; border-radius: 9px; font-size: 12px; white-space: normal; }
+.centered-login-card .notice { overflow-wrap: anywhere; }
+.centered-login-footer { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 20px; margin-top: 26px; color: #687382; font-size: 10px; text-align: center; }
+.centered-login-footer a:hover { text-decoration: underline; }
+@media (max-width: 480px) {
+  .centered-login-page { padding: 24px 16px 18px; }
+  .centered-login-card { padding: 28px clamp(16px, 5vw, 24px); border-radius: 16px; }
+  .login-ipu-logo { width: 76px; height: 76px; }
+}
+.university-logo { display: block; width: 100%; height: 100%; object-fit: contain; }
+.brand .brand-mark { width: 48px; height: 48px; padding: 3px; background: #fff; border-radius: 8px; }
+.campus-emblem .university-logo { width: 112px; height: 112px; }
+.faculty-art > .university-logo { width: 112px; height: 112px; z-index: 1; }
+.orbit-core { background: #fff; padding: 8px; }
+.app-shell { padding-top: 18px; }
+.university-navbar {
+  top: 14px;
+  width: calc(100% - 48px);
+  max-width: 1376px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #ececf0;
+  border-radius: 15px;
+  box-shadow: 0 5px 22px #20283e1a;
+}
+.navbar-inner { padding: 14px 22px; gap: 26px; }
+.university-navbar .brand-name { color: #252830; font-size: 14px; }
+.university-navbar .brand small { color: #858994; letter-spacing: .8px; }
+.university-navbar .brand-mark { background: #eff5ff; color: #2475ed; border-radius: 10px; }
+.navbar-content .nav-item { color: #62646b; font-size: 13px; font-weight: 400; }
+.navbar-content .nav-item:hover { background: #f6f7fa; color: #2563eb; }
+.navbar-content .nav-item.active,
+.navbar-content .nav-item.active:hover { background: #eef4ff; color: #2563eb; box-shadow: none; font-weight: 600; }
+.navbar-content .preview-switch, .account-label { color: #737b88; }
+.navbar-signout { background: #fff; color: #505563; border-color: var(--line); border-radius: 9px; }
+.navbar-signout:hover { background: #f5f7fa; }
+.navbar-toggle { color: #343842; }
+.topbar { max-width: 1376px; margin: auto; background: transparent; border: 0; color: #858994; }
+.topbar b { color: #5d6370; }
+.page-content { max-width: 1376px; padding: 24px 34px 28px; }
+.page-heading { margin-bottom: 28px; }
+.page-heading h1 { color: #202124; font-size: 28px; letter-spacing: -.7px; }
+.page-heading p { color: #737b88; font-size: 13px; }
+.eyebrow { color: #777e8a; letter-spacing: 1.2px; }
+.welcome-banner, .faculty-banner { background: #fff; border: 1px solid var(--line); border-radius: 13px; }
+.welcome-banner { min-height: 218px; }
+.welcome-copy { padding: 27px 30px; }
+.welcome-copy h2, .faculty-banner h2 { color: #252830; font-size: 31px; }
+.welcome-copy h2 em { color: #414855; font-weight: 400; }
+.welcome-copy p, .faculty-banner p { color: #7b818d; font-size: 12px; }
+.banner-kicker { color: #737b88; }
+.art-ring { border-color: #edf0f4; }
+.campus-emblem { color: #8bb7f9; }
+.floating-class { border-color: var(--line); box-shadow: 0 8px 24px #2528300a; }
+.stats-grid { gap: 14px; margin-bottom: 30px; }
+.stats-grid .stat-card {
+  --stat-accent: #ff9f00;
+  --stat-soft: #fff5e6;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-top: 6px solid var(--stat-accent);
+  border-radius: 13px;
+  background: #fff;
+  color: #202124;
+  padding: 18px 19px 20px;
+}
+.stats-grid .stat-card:nth-child(2) { --stat-accent: #9160ff; --stat-soft: #f3edff; }
+.stats-grid .stat-card:nth-child(3) { --stat-accent: #3c82ff; --stat-soft: #eaf1ff; }
+.stats-grid .stat-card:nth-child(4) { --stat-accent: #0db985; --stat-soft: #e5f8f1; }
+.stat-top { flex-direction: column-reverse; align-items: flex-start; gap: 9px; color: #7a818e; font-size: 12px; }
+.stats-grid .stat-icon { width: 35px; height: 35px; border-radius: 9px; color: var(--stat-accent); background: var(--stat-soft); }
+.stats-grid .stat-card > strong { font-size: 29px; font-weight: 600; margin-top: 12px; color: #202124; }
+.stats-grid .stat-card > p { font-size: 11px; color: #818794; }
+.panel { border-color: var(--line); border-radius: 13px; box-shadow: none; padding: 25px; }
+.section-heading h2 { color: #202124; font-size: 19px; font-weight: 550; letter-spacing: -.4px; }
+.section-heading .eyebrow { color: #858994; }
+.overview-columns, .bottom-grid { gap: 20px; margin-bottom: 30px; }
+.attendance-ring { background: conic-gradient(#0db985 var(--progress), #e8eced 0); }
+.attendance-ring strong { color: #202124; }
+.attendance-ring span, .helper-text { color: #818794; }
+.status-dot { background: #0db985; }
+.target-caption { color: #68747b; }
+.target-breakdown { color: #818794; }
+.target-breakdown b { color: #202124; }
+.next-step-card { background: #fff; border: 1px solid var(--line); border-top: 4px solid #05b7d1; border-radius: 13px; }
+.next-step-card .eyebrow { color: #7e8793; }
+.next-step-card h3 { color: #252830; }
+.next-step-card p { color: #7b818d; }
+.next-step-card a { color: #0098b5; }
+.tag { background: #e5f8fc; color: #009cbd; border-radius: 20px; }
+.data-table { font-size: 13px; }
+.data-table th { background: #f8f8f9; color: #767d89; font-size: 11px; text-transform: none; letter-spacing: 0; padding: 16px; }
+.data-table td { padding: 19px 16px; color: #515864; border-color: var(--line); }
+.data-table tbody tr:hover { background: #fafbfe; }
+.table-person b { color: #252830; }
+.table-attendance i, .subject-bar span { background: #0db985; }
+.table-attendance > span, .subject-bar { background: #e9edef; }
+.assessment-row, .subject-row { border-color: #eeeef1; }
+.assessment-row > strong { color: #8650ed; }
+.assessment-row small, .subject-info span { color: #818794; font-size: 10px; }
+.subject-row > strong { color: #009666; }
+.chart-legend > span { color: #818794; font-size: 12px; }
+.chart-legend b { color: #343842; }
+.timetable-panel { padding: 25px 0 0; }
+.day-heading { background: #f8f8fa; color: #5c6470; }
+.timetable-foot { background: #fcfcfd; color: #818794; }
+.plan-metrics > div { background: #f7f9fc; border: 1px solid var(--line); border-radius: 10px; }
+.plan-metrics > div:nth-child(2) { background: #f4efff; }
+.plan-metrics > div:nth-child(3) { background: #eaf9f2; }
+.plan-metrics > div:nth-child(2) strong { color: #8650ed; }
+.plan-metrics > div:nth-child(3) strong { color: #009666; }
+.app-footer { max-width: 1376px; color: #8b909a; }
+.skip-link { color: #fff; }
+@media (max-width: 1150px) {
+  .navbar-inner { gap: 16px; padding: 14px 18px; }
+  .navbar-content .nav-item { font-size: 11px; padding: 10px; }
+}
+@media (max-width: 980px) {
+  .navbar-inner { gap: 0; }
+  .navbar-account { border-top-color: var(--line); }
+  .navbar-content .nav-item { font-size: 13px; }
+  .page-content { padding: 24px; }
+}
+@media (max-width: 600px) {
+  .app-shell { padding-top: 10px; }
+  .university-navbar { width: calc(100% - 24px); top: 8px; border-radius: 12px; }
+  .navbar-inner { padding: 12px; }
+  .page-content { padding: 20px 15px; }
+  .page-heading h1 { font-size: 25px; }
+  .stats-grid { gap: 12px; }
+  .stats-grid .stat-card { padding: 16px 13px; }
+  .stat-top { font-size: 11px; }
+  .stats-grid .stat-card > strong { font-size: 27px; }
+  .stats-grid .stat-card > p { font-size: 10px; }
+  .panel { padding: 18px; }
+  .timetable-panel { padding: 18px 0 0; }
+  .welcome-copy { padding: 24px; }
+  .welcome-copy h2 { font-size: 28px; }
+  .section-heading h2 { font-size: 17px; }
+}

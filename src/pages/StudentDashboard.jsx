@@ -1,161 +1,25 @@
-import { useEffect, useState } from "react";
-import API from "../api/api";
-
-const StudentDashboard = () => {
-  const [student, setStudent] = useState(null);
-  const [attendance, setAttendance] = useState([]);
-  const [assessments, setAssessments] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const studentRes = await API.get("/api/students/me");
-        const attendanceRes = await API.get("/api/attendance/my");
-        const assessmentRes = await API.get("/api/assessments/my");
-
-        setStudent(studentRes.data);
-        setAttendance(attendanceRes.data);
-        setAssessments(assessmentRes.data);
-      } catch (err) {
-        console.error("Failed to load student dashboard", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  if (loading) return <p>Loading dashboard...</p>;
-  if (!student) return <p>Student data not found</p>;
-
-  const isAtRisk =
-    student.attendancePercentage < 60 || student.averageScore < 40;
-
-  return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-semibold">Welcome, {student.name}</h1>
-
-      {/* risk */}
-      <div>
-        <span
-          className={`px-4 py-1 rounded-full text-sm font-medium ${
-            isAtRisk
-              ? "bg-red-100 text-red-700"
-              : "bg-green-100 text-green-700"
-          }`}
-        >
-          {isAtRisk ? "At Risk" : "Safe"}
-        </span>
-      </div>
-
-      {/* summary cards of students  */}
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl shadow-md p-5 border-l-4 border-blue-500">
-          <h3 className="text-gray-600 font-medium">Attendance</h3>
-          <p className="text-3xl font-bold">{student.attendancePercentage}%</p>
-          <p className="text-sm text-gray-500">
-            {student.attendedClasses} / {student.totalClasses} classes
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-md p-5 border-l-4 border-purple-500">
-          <h3 className="text-gray-600 font-medium">Average Marks</h3>
-          <p className="text-3xl font-bold">{student.averageScore}%</p>
-          <p className="text-sm text-gray-500">
-            Total Tests: {student.totalTests}
-          </p>
-        </div>
-      </div>
-
-      {/* attendance history */}
-      <div className="bg-white p-5 rounded-xl shadow-md">
-        <h2 className="text-lg font-semibold mb-4">Recent Attendance</h2>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left border-collapse">
-            <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
-              <tr>
-                <th className="p-3">Date</th>
-                <th className="p-3">Subject</th>
-                <th className="p-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {attendance.length === 0 ? (
-                <tr>
-                  <td colSpan="3" className="p-4 text-center text-gray-500">
-                    No attendance records
-                  </td>
-                </tr>
-              ) : (
-                attendance.map((record) => (
-                  <tr key={record._id} className="border-b hover:bg-gray-50">
-                    <td className="p-3">
-                      {new Date(record.date).toLocaleDateString()}
-                    </td>
-                    <td className="p-3">{record.subject}</td>
-                    <td
-                      className={`p-3 font-semibold ${
-                        record.status === "present"
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {record.status}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* assessment history */}
-      <div className="bg-white p-5 rounded-xl shadow-md">
-        <h2 className="text-lg font-semibold mb-4">Recent Test Scores</h2>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left border-collapse">
-            <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
-              <tr>
-                <th className="p-3">Date</th>
-                <th className="p-3">Subject</th>
-                <th className="p-3">Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {assessments.length === 0 ? (
-                <tr>
-                  <td colSpan="3" className="p-4 text-center text-gray-500">
-                    No assessment records
-                  </td>
-                </tr>
-              ) : (
-                assessments.map((test) => (
-                  <tr key={test._id} className="border-b hover:bg-gray-50">
-                    <td className="p-3">
-                      {new Date(test.testDate).toLocaleDateString()}
-                    </td>
-                    <td className="p-3">{test.subject}</td>
-                    <td
-                      className={`p-3 font-semibold ${
-                        test.score < 40 ? "text-red-600" : "text-green-600"
-                      }`}
-                    >
-                      {test.score}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default StudentDashboard;
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import API from '../api/api';
+import Icon from '../components/Icon';
+import { PageHeader, StatCard, Notice, LoadingState, EmptyState } from '../components/UI';
+import DataTable from '../components/DataTable';
+import StatusBadge from '../components/StatusBadge';
+import WeeklyTimetable from '../components/WeeklyTimetable';
+import PlannerWorkspace from '../components/PlannerWorkspace';
+import { demoStudent, demoAttendance, demoAssessments, demoSchedule, demoRecommendations } from '../utils/demoData';
+export default function StudentDashboard({demo=false}) {
+ const location=useLocation();const navigate=useNavigate();const base=demo?'/preview':'/student';const view=location.pathname.endsWith('/planner')?'planner':location.pathname.endsWith('/records')?'records':'overview';
+ const [student,setStudent]=useState(demo?demoStudent:null),[attendance,setAttendance]=useState(demo?demoAttendance:[]),[assessments,setAssessments]=useState(demo?demoAssessments:[]),[schedule,setSchedule]=useState(demo?demoSchedule:[]),[recommendations,setRecommendations]=useState(demo?demoRecommendations:null),[risk,setRisk]=useState(null),[loading,setLoading]=useState(!demo),[error,setError]=useState(''),[warnings,setWarnings]=useState([]),[retry,setRetry]=useState(0);
+ useEffect(()=>{if(demo)return;let active=true;setLoading(true);setError('');const paths=['/api/students/me','/api/attendance/my','/api/assessments/my','/api/timetable/my','/api/scheduler/my-recommendations','/api/prediction/my-risk'];Promise.allSettled(paths.map(p=>API.get(p))).then(results=>{if(!active)return;if(results[0].status==='rejected'){setError(results[0].reason.response?.data?.error||'We could not load your student profile. Check your connection or sign in again.');return;}setStudent(results[0].value.data);const setters=[setStudent,setAttendance,setAssessments,null,setRecommendations,setRisk];const labels=['Profile','Attendance history','Assessments','Timetable','Recommendations','Risk assessment'];const failed=[];results.forEach((result,i)=>{if(result.status==='fulfilled'){if(i===3)setSchedule(result.value.data.schedule||[]);else setters[i]?.(result.value.data);}else if(!(i===3&&result.reason.response?.status===404))failed.push(labels[i]);});setWarnings(failed);}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[demo,retry]);
+ const updatePreferences = prefs => setStudent(current => ({...current,preferences:prefs}));
+ if(loading)return <LoadingState/>;if(error||!student)return <><Notice error>{error||'No student profile is linked to this account.'}</Notice><button className="button button-secondary" onClick={()=>setRetry(retry+1)}>Try again</button></>;
+ const target=student.preferences?.targetAttendance||75;const pct=student.totalClasses?Number(student.attendancePercentage):null;const recs=(recommendations?.recommendations||[]).filter(rec=>rec.currentAttendance!==null&&rec.currentAttendance<target);const shortName=student.name?.split(' ')[0]||'there';
+ return <div className="student-dashboard"><PageHeader eyebrow="STUDENT SERVICES" title={view==='planner'?'Attendance planner':view==='records'?'Academic records':'Welcome, '+shortName+'.'} description={view==='planner'?'Manage your timetable, availability and attendance target.':view==='records'?'Your latest attendance and assessments, all in one place.':'View your attendance, assessment results and upcoming classes.'} action={view==='overview'?<Link className="button button-primary" to={base+'/planner'}><Icon name="calendar" size={17}/>Open my planner<Icon name="arrow" size={17}/></Link>:null}/>{warnings.length>0&&<Notice error>Some sections could not load: {warnings.join(', ')}. <button className="text-button" onClick={()=>setRetry(retry+1)}>Retry</button></Notice>}
+ {view==='planner'?<PlannerWorkspace student={student} schedule={schedule} onTimetableChange={setSchedule} onPreferencesChange={updatePreferences} plan={recommendations} onPlanChange={setRecommendations} demo={demo}/>:view==='records'?<div className="records-grid"><section className="panel"><div className="section-heading"><div><span className="eyebrow">ATTENDANCE LOG</span><h2>Recent attendance</h2></div><span className="tag">LATEST 10 CLASSES</span></div><DataTable columns={[{key:'date',label:'Date',render:v=>new Date(v).toLocaleDateString('en-GB',{day:'numeric',month:'short'})},{key:'subject',label:'Subject'},{key:'status',label:'Status',render:v=><StatusBadge status={v}/> }]} data={attendance.slice(0,10)}/></section><section className="panel"><div className="section-heading"><div><span className="eyebrow">ASSESSMENT RECORDS</span><h2>Assessment results</h2></div></div><DataTable columns={[{key:'testDate',label:'Date',render:v=>new Date(v).toLocaleDateString()},{key:'subject',label:'Subject'},{key:'score',label:'Score',render:v=><b className={v<40?'text-danger':'text-green'}>{v}%</b>}]} data={assessments}/></section></div>:<>
+ <section className="welcome-banner"><div className="welcome-copy"><span className="banner-kicker"><span className="status-dot"/> UNIVERSITY ACADEMIC PORTAL</span><h2>Your semester.<br/><em>Organized in one place.</em></h2><p>Review your classes, monitor attendance<br/>and plan your academic week.</p><Link to={base+'/planner'} className="banner-link">Manage class schedule <Icon name="arrow" size={18}/></Link></div><div className="banner-art" aria-hidden="true"><div className="art-ring ring-a"/><div className="art-ring ring-b"/><div className="campus-emblem"><img className="university-logo" src="/ipu_logo.png" alt="Guru Gobind Singh Indraprastha University logo"/></div><div className="floating-class"><span className="float-icon"><Icon name="calendar" size={22}/></span><div><b>Academic planning</b><small>Your weekly class schedule</small></div><span className="float-check"><Icon name="check" size={16}/></span></div><span className="art-dot dot-a"/><span className="art-dot dot-b"/></div></section>
+ <div className="stats-grid"><StatCard label="Overall attendance" value={pct===null?'—':pct+'%'} detail={student.attendedClasses+' of '+student.totalClasses+' classes attended'} icon="chart" tone="stat-featured"/><StatCard label="Average assessment" value={student.totalTests?student.averageScore+'%':'—'} detail={student.totalTests+' assessments completed'} icon="book"/><StatCard label="Attendance target" value={target+'%'} detail="Your selected subject target" icon="shield"/><StatCard label="Subjects to focus on" value={recommendations&&!recommendations.setupRequired?recs.length:'—'} detail={recommendations?.setupRequired?'Complete your planner setup':recommendations?'Based on current attendance':'Recommendations unavailable'} icon="book"/></div>
+ <div className="overview-columns"><WeeklyTimetable schedule={schedule} onUpload={()=>navigate(base+'/planner')}/><aside className="overview-aside"><section className="panel progress-panel"><div className="section-heading"><h2>Your attendance</h2><Icon name="chart" size={18}/></div><div className="attendance-ring" style={{'--progress':Math.min(100,Math.max(0,pct||0))+'%'}}><div><strong>{pct===null?'—':pct+'%'}</strong><span>OVERALL</span></div></div><div className="target-caption"><span className="status-dot"/>{pct===null?'No attendance records yet':pct>=target?'Above your overall target':'Below your overall target'}</div><div className="target-breakdown"><span>Target <b>{target}%</b></span><span>Attended <b>{student.attendedClasses}/{student.totalClasses}</b></span></div><p className="helper-text">Individual subjects may still need attention.</p></section><section className="next-step-card"><span className="eyebrow">ATTENDANCE ADVISORY</span><h3>{recs.length?'Give '+recs[0].subject+' some extra attention.':'Give your week a head start.'}</h3><p>{recs.length?recs[0].currentAttendance+'% current subject attendance. Review upcoming classes in your planner.':'Add your availability and take the guesswork out of showing up.'}</p><Link className="planner-quick-link" to={base+'/planner'}>Go to my planner <Icon name="arrow" size={17}/></Link></section></aside></div>
+ <div className="bottom-grid"><section className="panel"><div className="section-heading"><div><span className="eyebrow">SUBJECT ATTENDANCE</span><h2>Subjects needing attention</h2></div><span className="tag">TARGET {target}%</span></div>{recs.length?recs.map((rec,i)=><div className="subject-row" key={rec.subject}><span className={'subject-icon class-color-'+(i%4)}><Icon name="book" size={20}/></span><div className="subject-info"><b>{rec.subject}</b><span>{rec.requiredSessions===null?'Target calculation unavailable':rec.requiredSessions+' sessions needed by semester end'}</span></div><strong>{rec.currentAttendance}%</strong><div className="subject-bar"><span style={{width:Math.min(100,rec.currentAttendance)+'%'}}/></div></div>):<EmptyState title={recommendations?.setupRequired?'Complete your planner setup':recommendations?'No subjects flagged':'Recommendations unavailable'}>{recommendations?.setupRequired?recommendations.summary:recommendations?'Review your timetable and keep your progress going.':'Your recommendations will appear when the service is available.'}</EmptyState>}<p className="helper-text">Required sessions account for all remaining scheduled classes through semester end.</p></section><section className="panel"><div className="section-heading"><div><span className="eyebrow">ASSESSMENT SUMMARY</span><h2>Latest assessments</h2></div><Link className="text-button" to={base+'/records'}>View all <Icon name="arrow" size={15}/></Link></div>{assessments.length?assessments.slice(0,3).map((a,i)=><div className="assessment-row" key={a._id||i}><span className="assessment-number">0{i+1}</span><div><b>{a.subject}</b><small>{new Date(a.testDate).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</small></div><strong>{a.score}<small>/100</small></strong></div>):<EmptyState title="Your progress starts here">Assessment results will appear after your college uploads them.</EmptyState>}</section></div>{risk&&<div className="risk-summary"><Icon name="shield" size={17}/><span>Academic risk assessment</span><StatusBadge status={risk.riskLevel}/><span>Based on the existing risk model.</span></div>}</>}
+ </div>;
+}

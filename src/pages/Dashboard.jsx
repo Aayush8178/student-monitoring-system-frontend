@@ -1,42 +1,14 @@
-import { useEffect, useState } from "react";
-import API from "../api/api";
-import SummaryCard from "../components/SummaryCard";
-import AlertCard from "../components/AlertCard";
-
-function Dashboard() {
-  const [students, setStudents] = useState([]);
-  const [alerts, setAlerts] = useState([]);
-
-  useEffect(() => {
-    async function fetchData() {
-      const s = await API.get("/api/students");
-      const a = await API.get("/api/alerts");
-      setStudents(s.data);
-      setAlerts(a.data);
-    }
-    fetchData();
-  }, []);
-
-  return (
-    <div className="grid gap-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <SummaryCard title="Total Students" value={students.length} />
-        <SummaryCard title="Total Alerts" value={alerts.length} />
-      </div>
-
-      <div className="bg-white shadow rounded-xl p-4">
-        <h3 className="font-semibold mb-2">Recent Alerts</h3>
-        {alerts.map(a => (
-          <AlertCard
-            key={a._id}
-            name={a.studentId?.name}
-            reason={a.reason}
-            level={a.status}
-          />
-        ))}
-      </div>
-    </div>
-  );
+import {useState,useEffect} from 'react';
+import {Link} from 'react-router-dom';
+import API from '../api/api';
+import Icon from '../components/Icon';
+import {PageHeader,StatCard,Notice,LoadingState} from '../components/UI';
+import DataTable from '../components/DataTable';
+import StatusBadge from '../components/StatusBadge';
+import {demoStudents} from '../utils/demoData';
+export default function Dashboard({demo=false}){
+ const [students,setStudents]=useState(demo?demoStudents:[]),[overview,setOverview]=useState(demo?{totalStudents:5,lowAttendance:1,lowPerformance:1}:{}),[loading,setLoading]=useState(!demo),[error,setError]=useState(''),[query,setQuery]=useState(''),[filter,setFilter]=useState('all');
+ useEffect(()=>{if(demo)return;let active=true;Promise.all([API.get('/api/students'),API.get('/api/analytics/overview'),API.get('/api/prediction/all-risks').catch(()=>({data:{predictions:[]}}))]).then(([s,o,p])=>{if(!active)return;const risks=Object.fromEntries((p.data.predictions||[]).map(r=>[r.studentId,r.riskLevel]));setStudents(s.data.map(row=>({...row,riskLevel:risks[row._id]})));setOverview(o.data);}).catch(()=>{if(active)setError('Unable to load student data. Please check your connection and reload.');}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[demo]);
+ if(loading)return <LoadingState/>;const filtered=students.filter(s=>s.name?.toLowerCase().includes(query.toLowerCase())&&(filter==='all'||Number(s.attendancePercentage)<60));const avg=students.length?Math.round(students.reduce((sum,s)=>sum+Number(s.attendancePercentage||0),0)/students.length):null;
+ return <><PageHeader eyebrow="FACULTY WORKSPACE" title="Faculty dashboard" description="Monitor student attendance, assessment results and academic alerts." action={<Link className="button button-primary" to={demo?'/preview/admin/settings':'/settings'}><Icon name="upload" size={17}/>Import records</Link>}/>{error&&<Notice error>{error}</Notice>}<section className="faculty-banner"><div><span className="eyebrow">ACADEMIC ADMINISTRATION</span><h2>Student progress.<br/>A clear institutional view.</h2><p>Bring attendance, assessments and timely support together.</p></div><div className="faculty-art" aria-hidden="true"><img className="university-logo" src="/ipu_logo.png" alt="Guru Gobind Singh Indraprastha University logo"/></div></section><div className="stats-grid"><StatCard label="Total students" value={error?'—':overview.totalStudents??0} detail="In your academic workspace" icon="users" tone="stat-featured"/><StatCard label="Low attendance" value={error?'—':overview.lowAttendance??0} detail="Below the current 60% alert threshold" icon="calendar"/><StatCard label="Low performance" value={error?'—':overview.lowPerformance??0} detail="Average assessment below 40%" icon="book"/><StatCard label="Average attendance" value={avg===null?'—':avg+'%'} detail="Across listed students" icon="chart"/></div><section className="panel"><div className="section-heading"><div><span className="eyebrow">STUDENT DIRECTORY</span><h2>Your students</h2></div><span className="tag">{filtered.length} RECORDS</span></div><div className="table-tools"><label className="search-field"><Icon name="search" size={18}/><input aria-label="Search students" placeholder="Search a student…" value={query} onChange={e=>setQuery(e.target.value)}/></label><select aria-label="Filter students" value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">All students</option><option value="low">Low attendance</option></select></div><DataTable data={filtered} columns={[{key:'name',label:'Student',render:v=><div className="table-person"><span className="avatar">{v?.split(' ').map(n=>n[0]).slice(0,2).join('')}</span><b>{v}</b></div>},{key:'attendancePercentage',label:'Attendance',render:v=><div className="table-attendance"><b>{v??0}%</b><span><i style={{width:Math.max(0,Math.min(100,v||0))+'%'}}/></span></div>},{key:'averageScore',label:'Average score',render:v=><b>{v??'—'}{v!=null?'%':''}</b>},{key:'riskLevel',label:'Risk assessment',render:v=><StatusBadge status={v}/>} ]}/></section></>;
 }
-
-export default Dashboard;
